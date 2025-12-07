@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Next.js 16: middleware → proxy に変更
+// 一時的に認証を無効化してテスト
 export function proxy(request: NextRequest) {
+  // 認証チェックを一時的にスキップ
+  return NextResponse.next();
+
+  /*
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
@@ -41,6 +46,7 @@ export function proxy(request: NextRequest) {
   }
 
   return NextResponse.next();
+  */
 }
 
 export const config = {
