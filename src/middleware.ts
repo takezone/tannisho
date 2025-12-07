@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Next.js 16: middleware → proxy に変更
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
