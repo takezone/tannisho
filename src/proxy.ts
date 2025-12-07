@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+// Next.js 16: middleware → proxy に変更
+export function proxy(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
@@ -24,7 +25,7 @@ export function middleware(request: NextRequest) {
     });
   }
 
-  const decoded = atob(encoded);
+  const decoded = Buffer.from(encoded, "base64").toString("utf-8");
   const [username, password] = decoded.split(":");
 
   const validUsername = process.env.AUTH_USERNAME || "admin";
