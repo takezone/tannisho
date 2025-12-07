@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
     return new NextResponse("認証が必要です", {
       status: 401,
       headers: {
-        "WWW-Authenticate": 'Basic realm="聖教データベース"',
+        "WWW-Authenticate": 'Basic realm="Restricted"',
       },
     });
   }
@@ -19,7 +19,7 @@ export function middleware(request: NextRequest) {
     return new NextResponse("認証形式が無効です", {
       status: 401,
       headers: {
-        "WWW-Authenticate": 'Basic realm="聖教データベース"',
+        "WWW-Authenticate": 'Basic realm="Restricted"',
       },
     });
   }
@@ -34,7 +34,7 @@ export function middleware(request: NextRequest) {
     return new NextResponse("認証情報が無効です", {
       status: 401,
       headers: {
-        "WWW-Authenticate": 'Basic realm="聖教データベース"',
+        "WWW-Authenticate": 'Basic realm="Restricted"',
       },
     });
   }
