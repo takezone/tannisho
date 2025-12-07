@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getChapter, getScripture, getAllScriptures } from "@/lib/texts";
+import { parseContentSimple, TextBlock } from "@/lib/parser";
 
 interface PageProps {
   params: Promise<{
@@ -30,6 +31,34 @@ export async function generateStaticParams() {
   return params;
 }
 
+function TextBlockComponent({ block }: { block: TextBlock }) {
+  if (block.type === "citation-header") {
+    return (
+      <h3 className="text-base font-bold text-amber-800 dark:text-amber-400 mt-8 mb-3 flex items-center gap-2">
+        <span className="w-1 h-5 bg-amber-500 dark:bg-amber-400 rounded-full"></span>
+        {block.content}
+      </h3>
+    );
+  }
+
+  if (block.type === "citation") {
+    return (
+      <blockquote className="pl-4 border-l-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 py-3 px-4 rounded-r-lg mb-4">
+        <p className="text-stone-700 dark:text-stone-300 leading-loose whitespace-pre-wrap">
+          {block.content}
+        </p>
+      </blockquote>
+    );
+  }
+
+  // commentary（親鸞の釈文）
+  return (
+    <p className="text-stone-800 dark:text-stone-200 leading-loose mb-5 whitespace-pre-wrap">
+      {block.content}
+    </p>
+  );
+}
+
 export default async function ChapterPage({ params }: PageProps) {
   const { category, id, chapterId } = await params;
   const decodedChapterId = decodeURIComponent(chapterId);
@@ -43,13 +72,15 @@ export default async function ChapterPage({ params }: PageProps) {
   const currentIndex = scripture.chapters.findIndex(
     (c) => c.id === decodedChapterId
   );
-  const prevChapter = currentIndex > 0 ? scripture.chapters[currentIndex - 1] : null;
+  const prevChapter =
+    currentIndex > 0 ? scripture.chapters[currentIndex - 1] : null;
   const nextChapter =
     currentIndex < scripture.chapters.length - 1
       ? scripture.chapters[currentIndex + 1]
       : null;
 
-  const paragraphs = chapter.content.split(/\n\n+/).filter((p) => p.trim());
+  // テキストをパースして構造化
+  const blocks = parseContentSimple(chapter.content);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
@@ -81,17 +112,22 @@ export default async function ChapterPage({ params }: PageProps) {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-8">
-          <div className="prose prose-stone dark:prose-invert max-w-none">
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="text-stone-800 dark:text-stone-200 leading-loose mb-6 text-lg whitespace-pre-wrap"
-              >
-                {paragraph}
-              </p>
-            ))}
-          </div>
+        {/* 凡例 */}
+        <div className="mb-6 flex gap-4 text-sm text-stone-500 dark:text-stone-400">
+          <span className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-700 rounded"></span>
+            経典・論書の引用
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded"></span>
+            親鸞聖人の釈文
+          </span>
+        </div>
+
+        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
+          {blocks.map((block, index) => (
+            <TextBlockComponent key={index} block={block} />
+          ))}
         </article>
 
         {/* ナビゲーション */}
