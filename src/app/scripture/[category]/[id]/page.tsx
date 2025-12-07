@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getScripture, getAllScriptures } from "@/lib/texts";
+import { getScripture, getAllScriptures } from "@/lib/scriptures";
 
 interface PageProps {
   params: Promise<{

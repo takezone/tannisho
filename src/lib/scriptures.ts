@@ -1,5 +1,6 @@
-import fs from "fs";
-import path from "path";
+// 聖教データを静的にインポート
+import tannishoData from "../../data/tannisho/tannisho.json";
+import kyogyoshinshoData from "../../data/kyogyoshinsho/kyogyoshinsho.json";
 
 export interface Chapter {
   id: string;
@@ -21,41 +22,30 @@ export interface ScriptureInfo {
   chapterCount: number;
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// 全ての聖教データ
+const scriptures: Record<string, Record<string, Scripture>> = {
+  tannisho: {
+    tannisho: tannishoData as Scripture,
+  },
+  kyogyoshinsho: {
+    kyogyoshinsho: kyogyoshinshoData as Scripture,
+  },
+};
 
 export function getCategories(): string[] {
-  try {
-    return fs
-      .readdirSync(DATA_DIR)
-      .filter((item) => fs.statSync(path.join(DATA_DIR, item)).isDirectory());
-  } catch {
-    return [];
-  }
+  return Object.keys(scriptures);
 }
 
 export function getScripturesByCategory(category: string): ScriptureInfo[] {
-  const categoryDir = path.join(DATA_DIR, category);
+  const categoryData = scriptures[category];
+  if (!categoryData) return [];
 
-  try {
-    const files = fs
-      .readdirSync(categoryDir)
-      .filter((f) => f.endsWith(".json"));
-
-    return files.map((filename) => {
-      const filepath = path.join(categoryDir, filename);
-      const content = fs.readFileSync(filepath, "utf-8");
-      const scripture: Scripture = JSON.parse(content);
-
-      return {
-        id: scripture.id,
-        title: scripture.title,
-        category,
-        chapterCount: scripture.chapters.length,
-      };
-    });
-  } catch {
-    return [];
-  }
+  return Object.entries(categoryData).map(([id, scripture]) => ({
+    id,
+    title: scripture.title,
+    category,
+    chapterCount: scripture.chapters.length,
+  }));
 }
 
 export function getAllScriptures(): ScriptureInfo[] {
@@ -64,14 +54,9 @@ export function getAllScriptures(): ScriptureInfo[] {
 }
 
 export function getScripture(category: string, id: string): Scripture | null {
-  const filepath = path.join(DATA_DIR, category, `${id}.json`);
-
-  try {
-    const content = fs.readFileSync(filepath, "utf-8");
-    return JSON.parse(content);
-  } catch {
-    return null;
-  }
+  const categoryData = scriptures[category];
+  if (!categoryData) return null;
+  return categoryData[id] || null;
 }
 
 export function getChapter(
@@ -92,8 +77,11 @@ export function searchScriptures(
   query: string
 ): { scripture: ScriptureInfo; chapter: Chapter; snippet: string }[] {
   const allScriptures = getAllScriptures();
-  const results: { scripture: ScriptureInfo; chapter: Chapter; snippet: string }[] =
-    [];
+  const results: {
+    scripture: ScriptureInfo;
+    chapter: Chapter;
+    snippet: string;
+  }[] = [];
 
   for (const info of allScriptures) {
     const scripture = getScripture(info.category, info.id);

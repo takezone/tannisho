@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCategories, getScripturesByCategory } from "@/lib/texts";
+import { getCategories, getScripturesByCategory } from "@/lib/scriptures";
 
 export default function Home() {
   const categories = getCategories();

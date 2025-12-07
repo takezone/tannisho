@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getChapter, getScripture, getAllScriptures } from "@/lib/texts";
+import { getChapter, getScripture, getAllScriptures } from "@/lib/scriptures";
 import { parseContentSimple, TextBlock } from "@/lib/parser";
 
 interface PageProps {
