@@ -1,16 +1,24 @@
 import fs from "fs";
 import path from "path";
 
-export interface TextInfo {
+export interface Chapter {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export interface Scripture {
+  id: string;
+  title: string;
+  source: string;
+  chapters: Chapter[];
+}
+
+export interface ScriptureInfo {
   id: string;
   title: string;
   category: string;
-  filename: string;
-}
-
-export interface TextContent {
-  info: TextInfo;
-  content: string;
+  chapterCount: number;
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -19,29 +27,30 @@ export function getCategories(): string[] {
   try {
     return fs
       .readdirSync(DATA_DIR)
-      .filter((item) =>
-        fs.statSync(path.join(DATA_DIR, item)).isDirectory()
-      );
+      .filter((item) => fs.statSync(path.join(DATA_DIR, item)).isDirectory());
   } catch {
     return [];
   }
 }
 
-export function getTextsByCategory(category: string): TextInfo[] {
+export function getScripturesByCategory(category: string): ScriptureInfo[] {
   const categoryDir = path.join(DATA_DIR, category);
 
   try {
-    const files = fs.readdirSync(categoryDir).filter((f) => f.endsWith(".txt"));
+    const files = fs
+      .readdirSync(categoryDir)
+      .filter((f) => f.endsWith(".json"));
 
     return files.map((filename) => {
-      const id = filename.replace(".txt", "");
-      const title = extractTitle(path.join(categoryDir, filename)) || id;
+      const filepath = path.join(categoryDir, filename);
+      const content = fs.readFileSync(filepath, "utf-8");
+      const scripture: Scripture = JSON.parse(content);
 
       return {
-        id,
-        title,
+        id: scripture.id,
+        title: scripture.title,
         category,
-        filename,
+        chapterCount: scripture.chapters.length,
       };
     });
   } catch {
@@ -49,73 +58,68 @@ export function getTextsByCategory(category: string): TextInfo[] {
   }
 }
 
-export function getAllTexts(): TextInfo[] {
+export function getAllScriptures(): ScriptureInfo[] {
   const categories = getCategories();
-  return categories.flatMap((category) => getTextsByCategory(category));
+  return categories.flatMap((category) => getScripturesByCategory(category));
 }
 
-export function getTextContent(
-  category: string,
-  id: string
-): TextContent | null {
-  const filepath = path.join(DATA_DIR, category, `${id}.txt`);
+export function getScripture(category: string, id: string): Scripture | null {
+  const filepath = path.join(DATA_DIR, category, `${id}.json`);
 
   try {
     const content = fs.readFileSync(filepath, "utf-8");
-    const title = extractTitle(filepath) || id;
-
-    return {
-      info: {
-        id,
-        title,
-        category,
-        filename: `${id}.txt`,
-      },
-      content,
-    };
+    return JSON.parse(content);
   } catch {
     return null;
   }
 }
 
-function extractTitle(filepath: string): string | null {
-  try {
-    const content = fs.readFileSync(filepath, "utf-8");
-    const lines = content.split("\n");
+export function getChapter(
+  category: string,
+  scriptureId: string,
+  chapterId: string
+): { scripture: Scripture; chapter: Chapter } | null {
+  const scripture = getScripture(category, scriptureId);
+  if (!scripture) return null;
 
-    // #1 で始まる行を探す（聖教データのタイトル形式）
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("#1")) {
-        // #1 を除去してタイトルを取得
-        return trimmed.slice(2).trim().slice(0, 50);
-      }
-    }
+  const chapter = scripture.chapters.find((c) => c.id === chapterId);
+  if (!chapter) return null;
 
-    // #1 が見つからない場合は最初の意味のある行を使用
-    for (const line of lines) {
-      const trimmed = line.trim();
-      // ページ番号（P--xxx）やマーカー（#）で始まらない行を探す
-      if (trimmed && !trimmed.startsWith("P--") && !trimmed.startsWith("#")) {
-        return trimmed.slice(0, 50);
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return null;
+  return { scripture, chapter };
 }
 
-export function searchTexts(query: string): TextContent[] {
-  const allTexts = getAllTexts();
-  const results: TextContent[] = [];
+export function searchScriptures(
+  query: string
+): { scripture: ScriptureInfo; chapter: Chapter; snippet: string }[] {
+  const allScriptures = getAllScriptures();
+  const results: { scripture: ScriptureInfo; chapter: Chapter; snippet: string }[] =
+    [];
 
-  for (const textInfo of allTexts) {
-    const content = getTextContent(textInfo.category, textInfo.id);
-    if (content && content.content.includes(query)) {
-      results.push(content);
+  for (const info of allScriptures) {
+    const scripture = getScripture(info.category, info.id);
+    if (!scripture) continue;
+
+    for (const chapter of scripture.chapters) {
+      if (chapter.content.includes(query)) {
+        const queryIndex = chapter.content.indexOf(query);
+        const start = Math.max(0, queryIndex - 30);
+        const end = Math.min(
+          chapter.content.length,
+          queryIndex + query.length + 50
+        );
+        const snippet =
+          (start > 0 ? "..." : "") +
+          chapter.content.slice(start, end).replace(/\n/g, " ") +
+          (end < chapter.content.length ? "..." : "");
+
+        results.push({
+          scripture: info,
+          chapter,
+          snippet,
+        });
+      }
     }
   }
 
-  return results;
+  return results.slice(0, 50);
 }

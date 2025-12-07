@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchTexts } from "@/lib/texts";
+import { searchScriptures } from "@/lib/texts";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -9,23 +9,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  const results = searchTexts(query.trim());
+  const results = searchScriptures(query.trim());
 
-  const formattedResults = results.slice(0, 50).map((result) => {
-    const queryIndex = result.content.indexOf(query);
-    const start = Math.max(0, queryIndex - 50);
-    const end = Math.min(result.content.length, queryIndex + query.length + 100);
-    const snippet = (start > 0 ? "..." : "") +
-                    result.content.slice(start, end) +
-                    (end < result.content.length ? "..." : "");
-
-    return {
-      id: result.info.id,
-      title: result.info.title,
-      category: result.info.category,
-      snippet: snippet.replace(/\n/g, " "),
-    };
-  });
+  const formattedResults = results.map((result) => ({
+    scriptureId: result.scripture.id,
+    scriptureTitle: result.scripture.title,
+    category: result.scripture.category,
+    chapterId: result.chapter.id,
+    chapterTitle: result.chapter.title,
+    snippet: result.snippet,
+  }));
 
   return NextResponse.json({ results: formattedResults });
 }

@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 interface SearchResult {
-  id: string;
-  title: string;
+  scriptureId: string;
+  scriptureTitle: string;
   category: string;
+  chapterId: string;
+  chapterTitle: string;
   snippet: string;
 }
 
@@ -100,16 +102,13 @@ export default function SearchPage() {
                 {results.map((result, index) => (
                   <Link
                     key={index}
-                    href={`/text/${encodeURIComponent(result.category)}/${encodeURIComponent(result.id)}`}
+                    href={`/scripture/${encodeURIComponent(result.category)}/${encodeURIComponent(result.scriptureId)}/${encodeURIComponent(result.chapterId)}`}
                     className="block p-4 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-500 transition-colors"
                   >
                     <h3 className="font-semibold text-stone-800 dark:text-stone-200">
-                      {result.title}
+                      {result.scriptureTitle} - {result.chapterTitle}
                     </h3>
-                    <p className="text-sm text-stone-500 dark:text-stone-400 mb-2">
-                      {result.category}
-                    </p>
-                    <p className="text-stone-600 dark:text-stone-300 text-sm line-clamp-3">
+                    <p className="text-stone-600 dark:text-stone-300 text-sm mt-2 line-clamp-3">
                       {result.snippet}
                     </p>
                   </Link>

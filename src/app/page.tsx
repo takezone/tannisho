@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCategories, getTextsByCategory } from "@/lib/texts";
+import { getCategories, getScripturesByCategory } from "@/lib/texts";
 
 export default function Home() {
   const categories = getCategories();
@@ -45,32 +45,26 @@ export default function Home() {
             <p className="text-stone-500 dark:text-stone-400">
               データがまだ登録されていません。
             </p>
-            <p className="mt-2 text-sm text-stone-400 dark:text-stone-500">
-              <code className="bg-stone-100 dark:bg-stone-800 px-2 py-1 rounded">
-                data/
-              </code>{" "}
-              ディレクトリにテキストファイルを配置してください。
-            </p>
           </div>
         ) : (
           <div className="space-y-8">
             {categories.map((category) => {
-              const texts = getTextsByCategory(category);
+              const scriptures = getScripturesByCategory(category);
               return (
                 <section key={category}>
-                  <h2 className="text-xl font-semibold text-stone-800 dark:text-stone-200 mb-4 pb-2 border-b border-stone-200 dark:border-stone-700">
-                    {category}
-                  </h2>
-                  <ul className="space-y-2">
-                    {texts.map((text) => (
-                      <li key={text.id}>
+                  <ul className="space-y-3">
+                    {scriptures.map((scripture) => (
+                      <li key={scripture.id}>
                         <Link
-                          href={`/text/${category}/${text.id}`}
-                          className="block px-4 py-3 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-500 transition-colors"
+                          href={`/scripture/${category}/${scripture.id}`}
+                          className="block p-5 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-500 transition-colors"
                         >
-                          <span className="text-stone-800 dark:text-stone-200">
-                            {text.title}
-                          </span>
+                          <h3 className="text-xl font-semibold text-stone-800 dark:text-stone-200">
+                            {scripture.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                            {scripture.chapterCount}章
+                          </p>
                         </Link>
                       </li>
                     ))}
