@@ -36,8 +36,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# 聖教データ（著作権上の理由でコミットしない）
-/data/
+# ダウンロード元ファイル
 /downloads/
 
 # typescript
