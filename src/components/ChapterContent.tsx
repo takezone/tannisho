@@ -93,35 +93,21 @@ export default function ChapterContent({
       <main className="max-w-4xl mx-auto px-6 py-8">
         <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
           <VerticalTextContainer className="overflow-x-auto">
-            <div className="writing-vertical h-[70vh] min-h-[500px] flex">
-              {/* 前の章へ（縦書きでは右端＝読み始め） */}
-              {prevChapter && (
-                <Link
-                  href={getChapterUrl(prevChapter.id)}
-                  className="flex-shrink-0 flex items-center justify-center w-12 mr-4 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-                  title={`前: ${prevChapter.title}`}
-                >
-                  <span className="writing-vertical text-sm">← 前</span>
-                </Link>
-              )}
+            <div className="writing-vertical h-[70vh] min-h-[500px]">
+              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
+                {chapter.title}
+              </h2>
+              {blocks.map((block, index) => (
+                <TextBlockComponent key={index} block={block} />
+              ))}
 
-              <div className="flex-1">
-                <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
-                  {chapter.title}
-                </h2>
-                {blocks.map((block, index) => (
-                  <TextBlockComponent key={index} block={block} />
-                ))}
-              </div>
-
-              {/* 次の章へ（縦書きでは左端＝読み終わり） */}
+              {/* 次の章へ（本文の最後に配置） */}
               {nextChapter && (
                 <Link
                   href={getChapterUrl(nextChapter.id)}
-                  className="flex-shrink-0 flex items-center justify-center w-12 ml-4 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-                  title={`次: ${nextChapter.title}`}
+                  className="inline-block ml-8 px-4 py-2 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
                 >
-                  <span className="writing-vertical text-sm">次 →</span>
+                  次 → {nextChapter.title}
                 </Link>
               )}
             </div>
