@@ -4,6 +4,7 @@ import Link from "next/link";
 import { parseContentSimple, parseRuby, TextBlock } from "@/lib/parser";
 import VerticalTextContainer from "@/components/VerticalTextContainer";
 import Drawer from "@/components/Drawer";
+import HeaderSearch from "@/components/HeaderSearch";
 
 interface Chapter {
   id: string;
@@ -86,6 +87,7 @@ export default function ChapterContent({
                 </p>
               </div>
             </div>
+            <HeaderSearch />
           </div>
         </div>
       </header>
