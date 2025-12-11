@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { getChapterUrl } from "@/lib/chapters";
 
 interface Chapter {
   id: string;
@@ -83,7 +84,7 @@ export default function Drawer({ chapters, currentChapterId }: DrawerProps) {
             {chapters.map((chapter) => (
               <li key={chapter.id}>
                 <Link
-                  href={chapter.id === "序文" ? "/" : `/${encodeURIComponent(chapter.id)}`}
+                  href={getChapterUrl(chapter.id)}
                   onClick={() => setIsOpen(false)}
                   className={`block px-3 py-2 rounded-lg transition-colors ${
                     currentChapterId === chapter.id

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { getChapterUrl } from "@/lib/chapters";
 
 interface SearchResult {
   scriptureId: string;
@@ -118,7 +119,7 @@ function SearchContent() {
                 {results.map((result, index) => (
                   <Link
                     key={index}
-                    href={result.chapterId === "序文" ? "/" : `/${encodeURIComponent(result.chapterId)}`}
+                    href={getChapterUrl(result.chapterId)}
                     className="block p-4 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 hover:border-amber-500 dark:hover:border-amber-500 transition-colors"
                   >
                     <h3 className="font-semibold text-stone-800 dark:text-stone-200">

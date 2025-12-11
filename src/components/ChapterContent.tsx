@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { parseContentSimple, parseRuby, TextBlock } from "@/lib/parser";
+import { getChapterUrl } from "@/lib/chapters";
 import VerticalTextContainer from "@/components/VerticalTextContainer";
 import Drawer from "@/components/Drawer";
 import HeaderSearch from "@/components/HeaderSearch";
@@ -60,9 +61,6 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
   );
 }
 
-function getChapterUrl(chapterId: string): string {
-  return chapterId === "序文" ? "/" : `/${encodeURIComponent(chapterId)}`;
-}
 
 export default function ChapterContent({
   chapter,

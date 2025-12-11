@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getScripture } from "@/lib/scriptures";
+import { getChapterIdFromSlug, getAllChapterSlugs } from "@/lib/chapters";
 import ChapterContent from "@/components/ChapterContent";
 
 interface PageProps {
@@ -9,20 +10,21 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const scripture = getScripture("tannisho", "tannisho");
-  if (!scripture) return [];
-
-  // 序文以外の章のパラメータを生成（序文は / で表示）
-  return scripture.chapters
-    .filter((chapter) => chapter.id !== "序文")
-    .map((chapter) => ({
-      chapterId: chapter.id,
-    }));
+  // 序文以外の全てのスラッグを生成
+  return getAllChapterSlugs().map((slug) => ({
+    chapterId: slug,
+  }));
 }
 
 export default async function ChapterPage({ params }: PageProps) {
-  const { chapterId } = await params;
-  const decodedChapterId = decodeURIComponent(chapterId);
+  const { chapterId: slug } = await params;
+
+  // スラッグから章IDを取得
+  const chapterId = getChapterIdFromSlug(slug);
+
+  if (!chapterId) {
+    notFound();
+  }
 
   const scripture = getScripture("tannisho", "tannisho");
   if (!scripture) {
@@ -30,7 +32,7 @@ export default async function ChapterPage({ params }: PageProps) {
   }
 
   const currentIndex = scripture.chapters.findIndex(
-    (c) => c.id === decodedChapterId
+    (c) => c.id === chapterId
   );
 
   if (currentIndex === -1) {
