@@ -34,8 +34,7 @@ export async function generateStaticParams() {
 function TextBlockComponent({ block }: { block: TextBlock }) {
   if (block.type === "citation-header") {
     return (
-      <h3 className="text-base font-bold text-amber-800 dark:text-amber-400 mt-8 mb-3 flex items-center gap-2">
-        <span className="w-1 h-5 bg-amber-500 dark:bg-amber-400 rounded-full"></span>
+      <h3 className="text-base font-bold text-amber-800 dark:text-amber-400 border-t-2 border-amber-500 dark:border-amber-400 pt-2">
         {block.content}
       </h3>
     );
@@ -43,8 +42,8 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
 
   if (block.type === "citation") {
     return (
-      <blockquote className="pl-4 border-l-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 py-3 px-4 rounded-r-lg mb-4">
-        <p className="text-stone-700 dark:text-stone-300 leading-loose whitespace-pre-wrap">
+      <blockquote className="border-t-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 pt-3 pb-3 px-2">
+        <p className="text-stone-700 dark:text-stone-300 whitespace-pre-wrap">
           {block.content}
         </p>
       </blockquote>
@@ -53,7 +52,7 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
 
   // commentary（親鸞の釈文）
   return (
-    <p className="text-stone-800 dark:text-stone-200 leading-loose mb-5 whitespace-pre-wrap">
+    <p className="text-stone-800 dark:text-stone-200 whitespace-pre-wrap">
       {block.content}
     </p>
   );
@@ -113,21 +112,19 @@ export default async function ChapterPage({ params }: PageProps) {
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* 凡例 */}
-        <div className="mb-6 flex gap-4 text-sm text-stone-500 dark:text-stone-400">
+        <div className="mb-6 flex gap-6 text-sm text-stone-500 dark:text-stone-400">
           <span className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-700 rounded"></span>
-            経典・論書の引用
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-600 rounded"></span>
-            親鸞聖人の釈文
+            <span className="w-4 h-1 bg-amber-300 dark:bg-amber-700"></span>
+            引用
           </span>
         </div>
 
-        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
-          {blocks.map((block, index) => (
-            <TextBlockComponent key={index} block={block} />
-          ))}
+        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8 overflow-x-auto">
+          <div className="writing-vertical h-[70vh] min-h-[500px]">
+            {blocks.map((block, index) => (
+              <TextBlockComponent key={index} block={block} />
+            ))}
+          </div>
         </article>
 
         {/* ナビゲーション */}

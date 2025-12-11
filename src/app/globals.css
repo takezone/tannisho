@@ -24,3 +24,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 縦書き */
+.writing-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  line-height: 2;
+  letter-spacing: 0.05em;
+}
+
+.writing-vertical p,
+.writing-vertical blockquote {
+  margin-block: 0;
+  margin-inline: 0 1.5rem;
+}
+
+.writing-vertical h3 {
+  margin-block: 0;
+  margin-inline: 0 2rem;
+}
