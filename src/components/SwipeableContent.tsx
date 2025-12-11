@@ -17,9 +17,32 @@ export default function SwipeableContent({
   className = "",
 }: SwipeableContentProps) {
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartTime = useRef<number | null>(null);
+
+  // スクロール位置をチェック（縦書き用）
+  const checkScrollPosition = () => {
+    const container = containerRef.current;
+    if (!container) return { atStart: false, atEnd: false };
+
+    // 縦書きコンテナを探す
+    const scrollable = container.querySelector(".overflow-x-auto");
+    if (!scrollable) return { atStart: true, atEnd: true };
+
+    const { scrollLeft, scrollWidth, clientWidth } = scrollable;
+    const tolerance = 10; // 端と判定する許容範囲
+
+    // 縦書き（vertical-rl）の場合：
+    // scrollLeft = 0 → 右端（開始位置）
+    // scrollLeft = -(scrollWidth - clientWidth) → 左端（終了位置）
+    const maxScroll = scrollWidth - clientWidth;
+    const atStart = scrollLeft >= -tolerance; // 右端
+    const atEnd = scrollLeft <= -(maxScroll - tolerance); // 左端
+
+    return { atStart, atEnd };
+  };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -50,11 +73,13 @@ export default function SwipeableContent({
     const isSlowEnough = duration > 500;
 
     if (isHorizontalSwipe && isLongEnough && isSlowEnough) {
-      if (deltaX > 0 && nextUrl) {
-        // 右にスワイプ → 次の章（縦書きでは左側が次）
+      const { atStart, atEnd } = checkScrollPosition();
+
+      if (deltaX > 0 && nextUrl && atEnd) {
+        // 右にスワイプ → 次の章（縦書きの左端＝読み終わりの位置でのみ）
         router.push(nextUrl);
-      } else if (deltaX < 0 && prevUrl) {
-        // 左にスワイプ → 前の章（縦書きでは右側が前）
+      } else if (deltaX < 0 && prevUrl && atStart) {
+        // 左にスワイプ → 前の章（縦書きの右端＝読み始めの位置でのみ）
         router.push(prevUrl);
       }
     }
@@ -66,6 +91,7 @@ export default function SwipeableContent({
 
   return (
     <div
+      ref={containerRef}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       className={className}
