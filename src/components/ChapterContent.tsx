@@ -77,9 +77,14 @@ export default function ChapterContent({
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Drawer chapters={chapters} currentChapterId={chapter.id} />
-              <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-                {chapter.title}
-              </h1>
+              <div>
+                <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+                  歎異抄
+                </h1>
+                <p className="text-sm text-stone-500 dark:text-stone-400">
+                  {chapter.title}
+                </p>
+              </div>
             </div>
           </div>
         </div>
