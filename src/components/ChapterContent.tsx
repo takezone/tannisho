@@ -5,6 +5,7 @@ import { parseContentSimple, parseRuby, TextBlock } from "@/lib/parser";
 import VerticalTextContainer from "@/components/VerticalTextContainer";
 import Drawer from "@/components/Drawer";
 import HeaderSearch from "@/components/HeaderSearch";
+import SwipeableContent from "@/components/SwipeableContent";
 
 interface Chapter {
   id: string;
@@ -93,18 +94,23 @@ export default function ChapterContent({
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
-          <VerticalTextContainer className="overflow-x-auto">
-            <div className="writing-vertical h-[70vh] min-h-[500px]">
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
-                {chapter.title}
-              </h2>
-              {blocks.map((block, index) => (
-                <TextBlockComponent key={index} block={block} />
-              ))}
-            </div>
-          </VerticalTextContainer>
-        </article>
+        <SwipeableContent
+          prevUrl={prevChapter ? getChapterUrl(prevChapter.id) : null}
+          nextUrl={nextChapter ? getChapterUrl(nextChapter.id) : null}
+        >
+          <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
+            <VerticalTextContainer className="overflow-x-auto">
+              <div className="writing-vertical h-[70vh] min-h-[500px]">
+                <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
+                  {chapter.title}
+                </h2>
+                {blocks.map((block, index) => (
+                  <TextBlockComponent key={index} block={block} />
+                ))}
+              </div>
+            </VerticalTextContainer>
+          </article>
+        </SwipeableContent>
 
         {/* ナビゲーション（縦書き用：次が左、前が右） */}
         <nav className="mt-8 flex justify-between gap-4">
