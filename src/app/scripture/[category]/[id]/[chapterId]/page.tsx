@@ -127,14 +127,6 @@ export default async function ChapterPage({ params }: PageProps) {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        {/* 凡例 */}
-        <div className="mb-6 flex gap-6 text-sm text-stone-500 dark:text-stone-400">
-          <span className="flex items-center gap-2">
-            <span className="w-4 h-1 bg-amber-300 dark:bg-amber-700"></span>
-            引用
-          </span>
-        </div>
-
         <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
           <VerticalTextContainer className="overflow-x-auto">
             <div className="writing-vertical h-[70vh] min-h-[500px]">
