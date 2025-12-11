@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getChapter, getScripture, getAllScriptures } from "@/lib/scriptures";
-import { parseContentSimple, TextBlock } from "@/lib/parser";
+import { parseContentSimple, parseRuby, TextBlock } from "@/lib/parser";
 
 interface PageProps {
   params: Promise<{
@@ -31,11 +31,26 @@ export async function generateStaticParams() {
   return params;
 }
 
+function RubyText({ content }: { content: string }) {
+  // 改行で分割して各行をルビ処理
+  const lines = content.split("\n");
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {parseRuby(line)}
+          {i < lines.length - 1 && <br />}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function TextBlockComponent({ block }: { block: TextBlock }) {
   if (block.type === "citation-header") {
     return (
       <h3 className="text-base font-bold text-amber-800 dark:text-amber-400 border-t-2 border-amber-500 dark:border-amber-400 pt-2">
-        {block.content}
+        <RubyText content={block.content} />
       </h3>
     );
   }
@@ -43,8 +58,8 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
   if (block.type === "citation") {
     return (
       <blockquote className="border-t-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 pt-3 pb-3 px-2">
-        <p className="text-stone-700 dark:text-stone-300 whitespace-pre-wrap">
-          {block.content}
+        <p className="text-stone-700 dark:text-stone-300">
+          <RubyText content={block.content} />
         </p>
       </blockquote>
     );
@@ -52,8 +67,8 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
 
   // commentary（親鸞の釈文）
   return (
-    <p className="text-stone-800 dark:text-stone-200 whitespace-pre-wrap">
-      {block.content}
+    <p className="text-stone-800 dark:text-stone-200">
+      <RubyText content={block.content} />
     </p>
   );
 }

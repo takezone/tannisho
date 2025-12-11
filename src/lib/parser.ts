@@ -2,6 +2,48 @@
  * テキストを解析して、引用と釈文を区別する
  */
 
+import { ReactNode, createElement } from "react";
+
+/**
+ * ルビ記法 {漢字|ふりがな} をパースしてReact要素に変換
+ */
+export function parseRuby(text: string): ReactNode[] {
+  const rubyPattern = /\{([^|]+)\|([^}]+)\}/g;
+  const result: ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = rubyPattern.exec(text)) !== null) {
+    // ルビの前のテキスト
+    if (match.index > lastIndex) {
+      result.push(text.slice(lastIndex, match.index));
+    }
+
+    // ルビ要素
+    const [, kanji, furigana] = match;
+    result.push(
+      createElement(
+        "ruby",
+        { key: `ruby-${keyIndex++}` },
+        kanji,
+        createElement("rp", null, "("),
+        createElement("rt", null, furigana),
+        createElement("rp", null, ")")
+      )
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 残りのテキスト
+  if (lastIndex < text.length) {
+    result.push(text.slice(lastIndex));
+  }
+
+  return result.length > 0 ? result : [text];
+}
+
 export interface TextBlock {
   type: "citation" | "commentary" | "citation-header";
   source?: string; // 引用元（経典名、論師名など）
