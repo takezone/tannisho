@@ -9,8 +9,8 @@ const notoSerifJP = Noto_Serif_JP({
 });
 
 export const metadata: Metadata = {
-  title: "聖教データベース",
-  description: "浄土真宗聖典テキスト",
+  title: "歎異抄",
+  description: "歎異抄テキスト",
 };
 
 export default function RootLayout({
