@@ -94,19 +94,19 @@ export default function ChapterContent({
         <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
           <VerticalTextContainer className="overflow-x-auto">
             <div className="writing-vertical h-[70vh] min-h-[500px]">
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
-                {chapter.title}
-              </h2>
-
-              {/* 前の章へ（タイトルの下に配置） */}
+              {/* 前の章へ（タイトルの右に配置） */}
               {prevChapter && (
                 <Link
                   href={getChapterUrl(prevChapter.id)}
-                  className="inline-block mb-4 px-4 py-2 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-sm"
+                  className="inline-block mr-4 px-4 py-2 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-sm"
                 >
                   ← 前 {prevChapter.title}
                 </Link>
               )}
+
+              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
+                {chapter.title}
+              </h2>
 
               {blocks.map((block, index) => (
                 <TextBlockComponent key={index} block={block} />
