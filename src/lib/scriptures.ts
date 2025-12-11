@@ -1,6 +1,5 @@
 // 聖教データを静的にインポート
 import tannishoData from "../../data/tannisho/tannisho.json";
-import kyogyoshinshoData from "../../data/kyogyoshinsho/kyogyoshinsho.json";
 
 export interface Chapter {
   id: string;
@@ -26,9 +25,6 @@ export interface ScriptureInfo {
 const scriptures: Record<string, Record<string, Scripture>> = {
   tannisho: {
     tannisho: tannishoData as Scripture,
-  },
-  kyogyoshinsho: {
-    kyogyoshinsho: kyogyoshinshoData as Scripture,
   },
 };
 
