@@ -6,7 +6,6 @@ import { getChapterUrl } from "@/lib/chapters";
 import VerticalTextContainer from "@/components/VerticalTextContainer";
 import Drawer from "@/components/Drawer";
 import HeaderSearch from "@/components/HeaderSearch";
-import SwipeableContent from "@/components/SwipeableContent";
 
 interface Chapter {
   id: string;
@@ -92,13 +91,21 @@ export default function ChapterContent({
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <SwipeableContent
-          prevUrl={prevChapter ? getChapterUrl(prevChapter.id) : null}
-          nextUrl={nextChapter ? getChapterUrl(nextChapter.id) : null}
-        >
-          <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
-            <VerticalTextContainer className="overflow-x-auto">
-              <div className="writing-vertical h-[70vh] min-h-[500px]">
+        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
+          <VerticalTextContainer className="overflow-x-auto">
+            <div className="writing-vertical h-[70vh] min-h-[500px] flex">
+              {/* 前の章へ（縦書きでは右端＝読み始め） */}
+              {prevChapter && (
+                <Link
+                  href={getChapterUrl(prevChapter.id)}
+                  className="flex-shrink-0 flex items-center justify-center w-12 mr-4 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  title={`前: ${prevChapter.title}`}
+                >
+                  <span className="writing-vertical text-sm">← 前</span>
+                </Link>
+              )}
+
+              <div className="flex-1">
                 <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 ml-8">
                   {chapter.title}
                 </h2>
@@ -106,9 +113,20 @@ export default function ChapterContent({
                   <TextBlockComponent key={index} block={block} />
                 ))}
               </div>
-            </VerticalTextContainer>
-          </article>
-        </SwipeableContent>
+
+              {/* 次の章へ（縦書きでは左端＝読み終わり） */}
+              {nextChapter && (
+                <Link
+                  href={getChapterUrl(nextChapter.id)}
+                  className="flex-shrink-0 flex items-center justify-center w-12 ml-4 text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  title={`次: ${nextChapter.title}`}
+                >
+                  <span className="writing-vertical text-sm">次 →</span>
+                </Link>
+              )}
+            </div>
+          </VerticalTextContainer>
+        </article>
 
         {/* ナビゲーション（縦書き用：次が左、前が右） */}
         <nav className="mt-8 flex justify-between gap-4">
