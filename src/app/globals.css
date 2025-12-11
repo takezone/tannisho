@@ -32,6 +32,8 @@ body {
   line-height: 2;
   letter-spacing: 0.05em;
   direction: rtl;
+  width: max-content;
+  margin-left: auto;
 }
 
 .writing-vertical > * {
