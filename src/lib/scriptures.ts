@@ -1,10 +1,17 @@
 // 聖教データを静的にインポート
 import tannishoData from "../../data/tannisho/tannisho.json";
 
+export interface GlossaryItem {
+  term: string;
+  reading: string;
+  meaning: string;
+}
+
 export interface Chapter {
   id: string;
   title: string;
   content: string;
+  glossary?: GlossaryItem[];
 }
 
 export interface Scripture {

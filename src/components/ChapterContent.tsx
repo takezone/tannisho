@@ -7,10 +7,17 @@ import VerticalTextContainer from "@/components/VerticalTextContainer";
 import Drawer from "@/components/Drawer";
 import HeaderSearch from "@/components/HeaderSearch";
 
+interface GlossaryItem {
+  term: string;
+  reading: string;
+  meaning: string;
+}
+
 interface Chapter {
   id: string;
   title: string;
   content: string;
+  glossary?: GlossaryItem[];
 }
 
 interface ChapterContentProps {
@@ -124,6 +131,32 @@ export default function ChapterContent({
             </div>
           </VerticalTextContainer>
         </article>
+
+        {/* 語釈セクション */}
+        {chapter.glossary && chapter.glossary.length > 0 && (
+          <section className="mt-6 bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6">
+            <h3 className="text-lg font-bold text-stone-800 dark:text-stone-200 mb-4 border-b border-stone-200 dark:border-stone-700 pb-2">
+              語釈
+            </h3>
+            <dl className="space-y-3">
+              {chapter.glossary.map((item, index) => (
+                <div key={index} className="flex flex-col sm:flex-row sm:gap-4">
+                  <dt className="font-medium text-amber-700 dark:text-amber-400 sm:w-32 flex-shrink-0">
+                    <ruby>
+                      {item.term}
+                      <rp>(</rp>
+                      <rt className="text-xs">{item.reading}</rt>
+                      <rp>)</rp>
+                    </ruby>
+                  </dt>
+                  <dd className="text-stone-600 dark:text-stone-400 text-sm mt-1 sm:mt-0">
+                    {item.meaning}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
 
         {/* ナビゲーション（縦書き用：次が左、前が右） */}
         <nav className="mt-8 flex justify-between gap-4">
