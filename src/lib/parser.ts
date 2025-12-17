@@ -3,6 +3,13 @@
  */
 
 import { ReactNode, createElement } from "react";
+import GlossaryTooltip from "@/components/GlossaryTooltip";
+
+export interface GlossaryItem {
+  term: string;
+  reading: string;
+  meaning: string;
+}
 
 /**
  * ルビ記法 {漢字|ふりがな} をパースしてReact要素に変換
@@ -39,6 +46,179 @@ export function parseRuby(text: string): ReactNode[] {
   // 残りのテキスト
   if (lastIndex < text.length) {
     result.push(text.slice(lastIndex));
+  }
+
+  return result.length > 0 ? result : [text];
+}
+
+/**
+ * 語釈のマッピングを作成（長い用語を優先）
+ */
+function createGlossaryMap(
+  glossary: GlossaryItem[]
+): Map<string, GlossaryItem> {
+  const map = new Map<string, GlossaryItem>();
+  // 長い用語を優先するためにソート
+  const sortedGlossary = [...glossary].sort(
+    (a, b) => b.term.length - a.term.length
+  );
+  for (const item of sortedGlossary) {
+    map.set(item.term, item);
+  }
+  return map;
+}
+
+/**
+ * テキストセグメントを語釈でラップ
+ */
+function wrapWithGlossary(
+  text: string,
+  glossaryMap: Map<string, GlossaryItem>,
+  keyPrefix: string
+): ReactNode[] {
+  if (glossaryMap.size === 0 || !text) {
+    return [text];
+  }
+
+  const result: ReactNode[] = [];
+  let remainingText = text;
+  let keyIndex = 0;
+
+  while (remainingText.length > 0) {
+    let foundMatch = false;
+
+    // 長い用語から順にマッチを試みる（mapは長さ順にソート済み）
+    for (const [term, item] of glossaryMap) {
+      const index = remainingText.indexOf(term);
+      if (index === 0) {
+        // 用語がテキストの先頭にある
+        result.push(
+          createElement(
+            GlossaryTooltip,
+            {
+              key: `${keyPrefix}-g-${keyIndex++}`,
+              reading: item.reading,
+              meaning: item.meaning,
+            },
+            term
+          )
+        );
+        remainingText = remainingText.slice(term.length);
+        foundMatch = true;
+        break;
+      } else if (index > 0) {
+        // 用語の前にテキストがある
+        result.push(remainingText.slice(0, index));
+        result.push(
+          createElement(
+            GlossaryTooltip,
+            {
+              key: `${keyPrefix}-g-${keyIndex++}`,
+              reading: item.reading,
+              meaning: item.meaning,
+            },
+            term
+          )
+        );
+        remainingText = remainingText.slice(index + term.length);
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (!foundMatch) {
+      // マッチする用語がない場合、1文字進める
+      result.push(remainingText[0]);
+      remainingText = remainingText.slice(1);
+    }
+  }
+
+  // 連続する文字列を結合
+  const consolidated: ReactNode[] = [];
+  let currentString = "";
+  for (const node of result) {
+    if (typeof node === "string") {
+      currentString += node;
+    } else {
+      if (currentString) {
+        consolidated.push(currentString);
+        currentString = "";
+      }
+      consolidated.push(node);
+    }
+  }
+  if (currentString) {
+    consolidated.push(currentString);
+  }
+
+  return consolidated;
+}
+
+/**
+ * ルビ記法と語釈をパースしてReact要素に変換
+ */
+export function parseRubyWithGlossary(
+  text: string,
+  glossary?: GlossaryItem[]
+): ReactNode[] {
+  const glossaryMap = glossary ? createGlossaryMap(glossary) : new Map();
+  const rubyPattern = /\{([^|]+)\|([^}]+)\}/g;
+  const result: ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = rubyPattern.exec(text)) !== null) {
+    // ルビの前のテキスト（語釈チェック）
+    if (match.index > lastIndex) {
+      const beforeText = text.slice(lastIndex, match.index);
+      result.push(...wrapWithGlossary(beforeText, glossaryMap, `pre-${keyIndex}`));
+    }
+
+    // ルビ要素
+    const [, kanji, furigana] = match;
+    const glossaryItem = glossaryMap.get(kanji);
+
+    if (glossaryItem) {
+      // 語釈がある場合はツールチップでラップ
+      result.push(
+        createElement(
+          GlossaryTooltip,
+          {
+            key: `ruby-tooltip-${keyIndex}`,
+            reading: glossaryItem.reading,
+            meaning: glossaryItem.meaning,
+          },
+          createElement(
+            "ruby",
+            { key: `ruby-${keyIndex++}` },
+            kanji,
+            createElement("rp", null, "("),
+            createElement("rt", null, furigana),
+            createElement("rp", null, ")")
+          )
+        )
+      );
+    } else {
+      result.push(
+        createElement(
+          "ruby",
+          { key: `ruby-${keyIndex++}` },
+          kanji,
+          createElement("rp", null, "("),
+          createElement("rt", null, furigana),
+          createElement("rp", null, ")")
+        )
+      );
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 残りのテキスト（語釈チェック）
+  if (lastIndex < text.length) {
+    const remainingText = text.slice(lastIndex);
+    result.push(...wrapWithGlossary(remainingText, glossaryMap, `post-${keyIndex}`));
   }
 
   return result.length > 0 ? result : [text];

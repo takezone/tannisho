@@ -1,17 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { parseContentSimple, parseRuby, TextBlock } from "@/lib/parser";
+import {
+  parseContentSimple,
+  parseRubyWithGlossary,
+  TextBlock,
+  GlossaryItem,
+} from "@/lib/parser";
 import { getChapterUrl } from "@/lib/chapters";
 import VerticalTextContainer from "@/components/VerticalTextContainer";
 import Drawer from "@/components/Drawer";
 import HeaderSearch from "@/components/HeaderSearch";
-
-interface GlossaryItem {
-  term: string;
-  reading: string;
-  meaning: string;
-}
 
 interface Chapter {
   id: string;
@@ -27,13 +26,19 @@ interface ChapterContentProps {
   nextChapter: Chapter | null;
 }
 
-function RubyText({ content }: { content: string }) {
+function RubyText({
+  content,
+  glossary,
+}: {
+  content: string;
+  glossary?: GlossaryItem[];
+}) {
   const lines = content.split("\n");
   return (
     <>
       {lines.map((line, i) => (
         <span key={i}>
-          {parseRuby(line)}
+          {parseRubyWithGlossary(line, glossary)}
           {i < lines.length - 1 && <br />}
         </span>
       ))}
@@ -41,11 +46,17 @@ function RubyText({ content }: { content: string }) {
   );
 }
 
-function TextBlockComponent({ block }: { block: TextBlock }) {
+function TextBlockComponent({
+  block,
+  glossary,
+}: {
+  block: TextBlock;
+  glossary?: GlossaryItem[];
+}) {
   if (block.type === "citation-header") {
     return (
       <h3 className="text-base font-bold text-amber-800 dark:text-amber-400 border-t-2 border-amber-500 dark:border-amber-400 pt-2">
-        <RubyText content={block.content} />
+        <RubyText content={block.content} glossary={glossary} />
       </h3>
     );
   }
@@ -54,7 +65,7 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
     return (
       <blockquote className="border-t-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 pt-3 pb-3 px-2">
         <p className="text-stone-700 dark:text-stone-300">
-          <RubyText content={block.content} />
+          <RubyText content={block.content} glossary={glossary} />
         </p>
       </blockquote>
     );
@@ -62,7 +73,7 @@ function TextBlockComponent({ block }: { block: TextBlock }) {
 
   return (
     <p className="text-stone-800 dark:text-stone-200">
-      <RubyText content={block.content} />
+      <RubyText content={block.content} glossary={glossary} />
     </p>
   );
 }
@@ -116,7 +127,11 @@ export default function ChapterContent({
               </h2>
 
               {blocks.map((block, index) => (
-                <TextBlockComponent key={index} block={block} />
+                <TextBlockComponent
+                  key={index}
+                  block={block}
+                  glossary={chapter.glossary}
+                />
               ))}
 
               {/* 次の章へ（本文の最後に配置） */}
