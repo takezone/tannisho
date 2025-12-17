@@ -13,7 +13,7 @@ export default function GlossaryTooltip({
   meaning,
 }: PropsWithChildren<GlossaryTooltipProps>) {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState<"top" | "bottom">("bottom");
+  const [position, setPosition] = useState<"left" | "right">("left");
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLSpanElement>(null);
 
@@ -22,11 +22,11 @@ export default function GlossaryTooltip({
       const tooltipRect = tooltipRef.current.getBoundingClientRect();
       const containerRect = containerRef.current.getBoundingClientRect();
 
-      // 縦書きの場合、ツールチップが画面外にはみ出すかチェック
-      if (containerRect.left - tooltipRect.width < 10) {
-        setPosition("top");
+      // 縦書きの場合、ツールチップが画面下にはみ出すかチェック
+      if (containerRect.bottom + tooltipRect.height > window.innerHeight - 10) {
+        setPosition("right");
       } else {
-        setPosition("bottom");
+        setPosition("left");
       }
     }
   }, [isVisible]);
@@ -44,18 +44,18 @@ export default function GlossaryTooltip({
       {isVisible && (
         <span
           ref={tooltipRef}
-          className={`absolute z-50 px-3 py-2 text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-600 rounded-lg shadow-lg whitespace-normal writing-horizontal-tb ${
-            position === "bottom"
-              ? "right-full mr-2 top-0"
-              : "left-full ml-2 top-0"
+          className={`absolute z-50 py-3 px-2 text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-600 rounded-lg shadow-lg whitespace-normal ${
+            position === "left"
+              ? "top-full mt-2 right-0"
+              : "bottom-full mb-2 right-0"
           }`}
           style={{
-            width: "max-content",
-            maxWidth: "280px",
-            writingMode: "horizontal-tb",
+            writingMode: "vertical-rl",
+            height: "max-content",
+            maxHeight: "200px",
           }}
         >
-          <span className="block font-medium text-amber-700 dark:text-amber-400 mb-1">
+          <span className="block font-medium text-amber-700 dark:text-amber-400 ml-2">
             {reading}
           </span>
           <span className="block text-stone-600 dark:text-stone-300 text-xs leading-relaxed">
