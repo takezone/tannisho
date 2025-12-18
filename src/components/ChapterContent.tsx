@@ -30,9 +30,9 @@ interface ChapterContentProps {
 type FontSize = "small" | "medium" | "large";
 
 const fontSizeClasses: Record<FontSize, string> = {
-  small: "text-sm",
-  medium: "text-base",
-  large: "text-lg",
+  small: "text-base",
+  medium: "text-lg",
+  large: "text-xl",
 };
 
 function RubyText({
