@@ -142,6 +142,11 @@ export default function ChapterContent({
   const blocks = parseContentSimple(chapter.content);
   const [fontSize, setFontSize] = useState<FontSize>("medium");
 
+  // 章が変わったらページトップにスクロール
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [chapter.id]);
+
   // ローカルストレージから文字サイズを復元
   useEffect(() => {
     const saved = localStorage.getItem("tannisho-font-size") as FontSize | null;
