@@ -183,32 +183,33 @@ export default function ChapterContent({
         </div>
       </header>
 
-      {/* 左右の固定ナビゲーションボタン */}
-      {prevChapter && (
-        <Link
-          href={getChapterUrl(prevChapter.id)}
-          className="fixed right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full shadow-lg hover:bg-amber-50 dark:hover:bg-stone-700 hover:border-amber-300 dark:hover:border-amber-600 transition-colors group"
-          title={`前: ${prevChapter.title}`}
-        >
-          <span className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xl">
-            ›
-          </span>
-        </Link>
-      )}
-      {nextChapter && (
-        <Link
-          href={getChapterUrl(nextChapter.id)}
-          className="fixed left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full shadow-lg hover:bg-amber-50 dark:hover:bg-stone-700 hover:border-amber-300 dark:hover:border-amber-600 transition-colors group"
-          title={`次: ${nextChapter.title}`}
-        >
-          <span className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xl">
-            ‹
-          </span>
-        </Link>
-      )}
-
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
+        <div className="relative">
+          {/* 文章ブロックの左右のナビゲーションボタン */}
+          {prevChapter && (
+            <Link
+              href={getChapterUrl(prevChapter.id)}
+              className="hidden md:flex absolute -right-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full shadow-lg hover:bg-amber-50 dark:hover:bg-stone-700 hover:border-amber-300 dark:hover:border-amber-600 transition-colors group"
+              title={`前: ${prevChapter.title}`}
+            >
+              <span className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xl">
+                ›
+              </span>
+            </Link>
+          )}
+          {nextChapter && (
+            <Link
+              href={getChapterUrl(nextChapter.id)}
+              className="hidden md:flex absolute -left-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full shadow-lg hover:bg-amber-50 dark:hover:bg-stone-700 hover:border-amber-300 dark:hover:border-amber-600 transition-colors group"
+              title={`次: ${nextChapter.title}`}
+            >
+              <span className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xl">
+                ‹
+              </span>
+            </Link>
+          )}
+
+          <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
           <VerticalTextContainer className="overflow-x-auto">
             <div
               className={`writing-vertical h-[70vh] min-h-[500px] ${fontSizeClasses[fontSize]}`}
@@ -247,6 +248,7 @@ export default function ChapterContent({
             </div>
           </VerticalTextContainer>
         </article>
+        </div>
 
         {/* 語釈セクション */}
         {chapter.glossary && chapter.glossary.length > 0 && (
