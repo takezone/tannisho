@@ -156,7 +156,7 @@ function wrapWithGlossary(
 
 /**
  * ルビ記法と語釈をパースしてReact要素に変換
- * 連続するルビ要素の結合もチェックして複合語の語釈にも対応
+ * 連続するルビ要素の結合、ルビ＋プレーンテキストの結合にも対応
  */
 export function parseRubyWithGlossary(
   text: string,
@@ -191,6 +191,11 @@ export function parseRubyWithGlossary(
     return wrapWithGlossary(text, glossaryMap, "plain");
   }
 
+  // 語釈の用語リスト（長い順）
+  const glossaryTerms = Array.from(glossaryMap.keys()).sort(
+    (a, b) => b.length - a.length
+  );
+
   const result: ReactNode[] = [];
   let lastIndex = 0;
   let keyIndex = 0;
@@ -207,88 +212,113 @@ export function parseRubyWithGlossary(
       );
     }
 
-    // 連続するルビ要素の結合をチェック
-    let combinedKanji = segment.kanji;
-    let combinedFurigana = segment.furigana;
-    let combinedEnd = segment.end;
-    let combinedCount = 1;
+    // 最適なマッチを探す
+    let bestMatch: {
+      glossaryItem: GlossaryItem;
+      rubyCount: number;
+      plainTextLength: number;
+      combinedKanji: string;
+    } | null = null;
 
-    // 次のルビが連続しているかチェック（間にテキストがない）
-    for (let j = i + 1; j < segments.length; j++) {
-      const nextSegment = segments[j];
-      // 連続している場合（間にテキストがない）
-      if (nextSegment.start === combinedEnd) {
-        const testCombined = combinedKanji + nextSegment.kanji;
-        // 結合した漢字が語釈に存在するかチェック
-        if (glossaryMap.has(testCombined)) {
-          combinedKanji = testCombined;
-          combinedFurigana += nextSegment.furigana;
-          combinedEnd = nextSegment.end;
-          combinedCount++;
+    // 各語釈用語について、このルビから始まるマッチを探す
+    for (const term of glossaryTerms) {
+      if (!term.startsWith(segment.kanji)) continue;
+
+      // このルビの漢字で始まる用語を見つけた
+      let currentKanji = segment.kanji;
+      let rubyCount = 1;
+      let currentEnd = segment.end;
+
+      // 連続するルビ要素を結合してチェック
+      for (let j = i + 1; j < segments.length && currentKanji.length < term.length; j++) {
+        const nextSegment = segments[j];
+        if (nextSegment.start !== currentEnd) break; // 連続していない
+
+        const testKanji = currentKanji + nextSegment.kanji;
+        if (term.startsWith(testKanji)) {
+          currentKanji = testKanji;
+          currentEnd = nextSegment.end;
+          rubyCount++;
         } else {
           break;
         }
-      } else {
-        break;
+      }
+
+      // ルビの後のプレーンテキストも結合してチェック
+      let plainTextLength = 0;
+      if (currentKanji.length < term.length) {
+        const remainingTerm = term.slice(currentKanji.length);
+        const nextRubyStart = i + rubyCount < segments.length
+          ? segments[i + rubyCount].start
+          : text.length;
+        const plainTextAfter = text.slice(currentEnd, nextRubyStart);
+
+        if (plainTextAfter.startsWith(remainingTerm)) {
+          currentKanji = term;
+          plainTextLength = remainingTerm.length;
+        }
+      }
+
+      // 完全マッチした場合
+      if (currentKanji === term) {
+        const glossaryItem = glossaryMap.get(term);
+        if (glossaryItem) {
+          // より長いマッチを優先
+          if (!bestMatch || term.length > bestMatch.combinedKanji.length) {
+            bestMatch = {
+              glossaryItem,
+              rubyCount,
+              plainTextLength,
+              combinedKanji: term,
+            };
+          }
+        }
       }
     }
 
-    const glossaryItem = glossaryMap.get(combinedKanji);
-
-    if (glossaryItem) {
-      // 語釈がある場合はツールチップでラップ
-      if (combinedCount === 1) {
-        // 単一ルビ要素
-        result.push(
+    if (bestMatch) {
+      // マッチが見つかった場合
+      const rubyElements: ReactNode[] = [];
+      for (let k = 0; k < bestMatch.rubyCount; k++) {
+        const seg = segments[i + k];
+        rubyElements.push(
           createElement(
-            GlossaryTooltip,
-            {
-              key: `ruby-tooltip-${keyIndex}`,
-              reading: glossaryItem.reading,
-              meaning: glossaryItem.meaning,
-            },
-            createElement(
-              "ruby",
-              { key: `ruby-${keyIndex++}` },
-              segment.kanji,
-              createElement("rp", null, "("),
-              createElement("rt", null, segment.furigana),
-              createElement("rp", null, ")")
-            )
-          )
-        );
-      } else {
-        // 複合ルビ要素（複数のルビを結合）
-        const rubyElements: ReactNode[] = [];
-        for (let k = 0; k < combinedCount; k++) {
-          const seg = segments[i + k];
-          rubyElements.push(
-            createElement(
-              "ruby",
-              { key: `ruby-${keyIndex}-${k}` },
-              seg.kanji,
-              createElement("rp", null, "("),
-              createElement("rt", null, seg.furigana),
-              createElement("rp", null, ")")
-            )
-          );
-        }
-        result.push(
-          createElement(
-            GlossaryTooltip,
-            {
-              key: `ruby-tooltip-${keyIndex++}`,
-              reading: glossaryItem.reading,
-              meaning: glossaryItem.meaning,
-            },
-            ...rubyElements
+            "ruby",
+            { key: `ruby-${keyIndex}-${k}` },
+            seg.kanji,
+            createElement("rp", null, "("),
+            createElement("rt", null, seg.furigana),
+            createElement("rp", null, ")")
           )
         );
       }
-      i += combinedCount;
-      lastIndex = combinedEnd;
+
+      // プレーンテキスト部分があれば追加
+      if (bestMatch.plainTextLength > 0) {
+        const lastRuby = segments[i + bestMatch.rubyCount - 1];
+        const plainText = text.slice(
+          lastRuby.end,
+          lastRuby.end + bestMatch.plainTextLength
+        );
+        rubyElements.push(plainText);
+      }
+
+      result.push(
+        createElement(
+          GlossaryTooltip,
+          {
+            key: `ruby-tooltip-${keyIndex++}`,
+            reading: bestMatch.glossaryItem.reading,
+            meaning: bestMatch.glossaryItem.meaning,
+          },
+          ...rubyElements
+        )
+      );
+
+      i += bestMatch.rubyCount;
+      lastIndex = segments[i - 1].end + bestMatch.plainTextLength;
     } else {
-      // 語釈がない場合は通常のルビ要素
+      // マッチがない場合は通常のルビ要素
       result.push(
         createElement(
           "ruby",
