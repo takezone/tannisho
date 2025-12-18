@@ -15,9 +15,17 @@ export default function VerticalTextContainer({
 
   useEffect(() => {
     // 縦書き（右から左）なので、スクロールを右端（文章の先頭）に設定
-    if (containerRef.current) {
-      containerRef.current.scrollLeft = containerRef.current.scrollWidth;
-    }
+    // requestAnimationFrameでレイアウト計算完了後に実行
+    const scrollToRight = () => {
+      if (containerRef.current) {
+        containerRef.current.scrollLeft = containerRef.current.scrollWidth;
+      }
+    };
+
+    // 2回のrAFでレイアウト完了を確実に待つ
+    requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToRight);
+    });
   }, []);
 
   return (
