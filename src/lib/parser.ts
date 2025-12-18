@@ -87,6 +87,7 @@ function createGlossaryMap(
 /**
  * テキストセグメントを語釈でラップ
  * カタカナ→ひらがな正規化によるマッチングも行う
+ * 最も早い位置のマッチを優先し、同位置なら長いマッチを優先
  */
 function wrapWithGlossary(
   text: string,
@@ -102,54 +103,61 @@ function wrapWithGlossary(
   let keyIndex = 0;
 
   while (remainingText.length > 0) {
-    let foundMatch = false;
     const normalizedRemaining = katakanaToHiragana(remainingText);
 
-    // 長い用語から順にマッチを試みる（正規化版で検索）
+    // 最も早い位置のマッチを探す（同位置なら長いものを優先）
+    let bestMatch: {
+      index: number;
+      length: number;
+      item: GlossaryItem;
+    } | null = null;
+
     for (const [normalizedTerm, item] of normalizedMap) {
       const index = normalizedRemaining.indexOf(normalizedTerm);
-      if (index === 0) {
-        // 用語がテキストの先頭にある
-        const originalText = remainingText.slice(0, normalizedTerm.length);
-        result.push(
-          createElement(
-            GlossaryTooltip,
-            {
-              key: `${keyPrefix}-g-${keyIndex++}`,
-              reading: item.reading,
-              meaning: item.meaning,
-            },
-            originalText
-          )
-        );
-        remainingText = remainingText.slice(normalizedTerm.length);
-        foundMatch = true;
-        break;
-      } else if (index > 0) {
-        // 用語の前にテキストがある
-        result.push(remainingText.slice(0, index));
-        const originalText = remainingText.slice(index, index + normalizedTerm.length);
-        result.push(
-          createElement(
-            GlossaryTooltip,
-            {
-              key: `${keyPrefix}-g-${keyIndex++}`,
-              reading: item.reading,
-              meaning: item.meaning,
-            },
-            originalText
-          )
-        );
-        remainingText = remainingText.slice(index + normalizedTerm.length);
-        foundMatch = true;
-        break;
+      if (index === -1) continue;
+
+      // より早い位置、または同じ位置でより長いマッチを優先
+      if (
+        !bestMatch ||
+        index < bestMatch.index ||
+        (index === bestMatch.index && normalizedTerm.length > bestMatch.length)
+      ) {
+        bestMatch = {
+          index,
+          length: normalizedTerm.length,
+          item,
+        };
       }
     }
 
-    if (!foundMatch) {
-      // マッチする用語がない場合、1文字進める
-      result.push(remainingText[0]);
-      remainingText = remainingText.slice(1);
+    if (bestMatch) {
+      // マッチの前にテキストがあれば追加
+      if (bestMatch.index > 0) {
+        result.push(remainingText.slice(0, bestMatch.index));
+      }
+
+      // マッチした部分をツールチップでラップ
+      const originalText = remainingText.slice(
+        bestMatch.index,
+        bestMatch.index + bestMatch.length
+      );
+      result.push(
+        createElement(
+          GlossaryTooltip,
+          {
+            key: `${keyPrefix}-g-${keyIndex++}`,
+            reading: bestMatch.item.reading,
+            meaning: bestMatch.item.meaning,
+          },
+          originalText
+        )
+      );
+
+      remainingText = remainingText.slice(bestMatch.index + bestMatch.length);
+    } else {
+      // マッチがない場合、残りのテキストをそのまま追加
+      result.push(remainingText);
+      break;
     }
   }
 
