@@ -210,7 +210,7 @@ export default function ChapterContent({
           )}
 
           <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
-          <VerticalTextContainer className="overflow-x-auto">
+            <VerticalTextContainer key={chapter.id} className="overflow-x-auto">
             <div
               className={`writing-vertical h-[70vh] min-h-[500px] ${fontSizeClasses[fontSize]}`}
             >
