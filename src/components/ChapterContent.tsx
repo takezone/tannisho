@@ -94,42 +94,107 @@ function FontSizeSelector({
   fontSize: FontSize;
   onChange: (size: FontSize) => void;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 rounded-lg p-1">
-      <button
-        onClick={() => onChange("small")}
-        className={`px-2 py-1 rounded text-xs transition-colors ${
-          fontSize === "small"
-            ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
-            : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
-        }`}
-        title="小さい文字"
-      >
-        小
-      </button>
-      <button
-        onClick={() => onChange("medium")}
-        className={`px-2 py-1 rounded text-sm transition-colors ${
-          fontSize === "medium"
-            ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
-            : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
-        }`}
-        title="標準の文字"
-      >
-        中
-      </button>
-      <button
-        onClick={() => onChange("large")}
-        className={`px-2 py-1 rounded text-base transition-colors ${
-          fontSize === "large"
-            ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
-            : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
-        }`}
-        title="大きい文字"
-      >
-        大
-      </button>
-    </div>
+    <>
+      {/* モバイル: ポップオーバー */}
+      <div className="relative md:hidden">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-lg text-stone-600 dark:text-stone-300 text-sm"
+          title="文字サイズ"
+        >
+          文
+        </button>
+        {isOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-20"
+              onClick={() => setIsOpen(false)}
+            />
+            <div className="absolute right-0 top-full mt-1 z-30 flex items-center gap-1 bg-white dark:bg-stone-800 rounded-lg p-1 shadow-lg border border-stone-200 dark:border-stone-700">
+              <button
+                onClick={() => {
+                  onChange("small");
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-1.5 rounded text-xs transition-colors ${
+                  fontSize === "small"
+                    ? "bg-amber-100 dark:bg-stone-700 text-amber-600 dark:text-amber-400"
+                    : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                小
+              </button>
+              <button
+                onClick={() => {
+                  onChange("medium");
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  fontSize === "medium"
+                    ? "bg-amber-100 dark:bg-stone-700 text-amber-600 dark:text-amber-400"
+                    : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                中
+              </button>
+              <button
+                onClick={() => {
+                  onChange("large");
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-1.5 rounded text-base transition-colors ${
+                  fontSize === "large"
+                    ? "bg-amber-100 dark:bg-stone-700 text-amber-600 dark:text-amber-400"
+                    : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                大
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* デスクトップ: インライン表示 */}
+      <div className="hidden md:flex items-center gap-1 bg-stone-100 dark:bg-stone-800 rounded-lg p-1">
+        <button
+          onClick={() => onChange("small")}
+          className={`px-2 py-1 rounded text-xs transition-colors ${
+            fontSize === "small"
+              ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          }`}
+          title="小さい文字"
+        >
+          小
+        </button>
+        <button
+          onClick={() => onChange("medium")}
+          className={`px-2 py-1 rounded text-sm transition-colors ${
+            fontSize === "medium"
+              ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          }`}
+          title="標準の文字"
+        >
+          中
+        </button>
+        <button
+          onClick={() => onChange("large")}
+          className={`px-2 py-1 rounded text-base transition-colors ${
+            fontSize === "large"
+              ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          }`}
+          title="大きい文字"
+        >
+          大
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -169,10 +234,10 @@ export default function ChapterContent({
             <div className="flex items-center gap-2">
               <Drawer chapters={chapters} currentChapterId={chapter.id} />
               <div>
-                <h1 className="hidden md:block text-xl font-bold text-stone-900 dark:text-stone-100">
+                <h1 className="text-base md:text-xl font-bold text-stone-900 dark:text-stone-100">
                   歎異抄
                 </h1>
-                <p className="text-sm md:text-sm text-stone-900 md:text-stone-500 dark:text-stone-100 md:dark:text-stone-400 font-medium md:font-normal">
+                <p className="text-xs md:text-sm text-stone-500 dark:text-stone-400">
                   {chapter.title}
                 </p>
               </div>
