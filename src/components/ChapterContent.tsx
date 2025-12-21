@@ -164,20 +164,20 @@ export default function ChapterContent({
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
       <header className="border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-4 py-2 md:px-6 md:py-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             <div className="flex items-center gap-2">
               <Drawer chapters={chapters} currentChapterId={chapter.id} />
               <div>
-                <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+                <h1 className="hidden md:block text-xl font-bold text-stone-900 dark:text-stone-100">
                   歎異抄
                 </h1>
-                <p className="text-sm text-stone-500 dark:text-stone-400">
+                <p className="text-sm md:text-sm text-stone-900 md:text-stone-500 dark:text-stone-100 md:dark:text-stone-400 font-medium md:font-normal">
                   {chapter.title}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <FontSizeSelector
                 fontSize={fontSize}
                 onChange={handleFontSizeChange}
