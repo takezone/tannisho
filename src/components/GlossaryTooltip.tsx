@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, useState, useRef, useEffect } from "react";
+import { PropsWithChildren, useState, useRef, useCallback } from "react";
 
 interface GlossaryTooltipProps {
   reading: string;
@@ -13,39 +13,42 @@ export default function GlossaryTooltip({
   meaning,
 }: PropsWithChildren<GlossaryTooltipProps>) {
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState<"left" | "right">("left");
-  const tooltipRef = useRef<HTMLSpanElement>(null);
+  const [position, setPosition] = useState<"below" | "above">("below");
   const containerRef = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
-    if (isVisible && tooltipRef.current && containerRef.current) {
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      const containerRect = containerRef.current.getBoundingClientRect();
+  const handleMouseEnter = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
 
-      // 縦書きの場合、ツールチップが画面下にはみ出すかチェック
-      if (containerRect.bottom + tooltipRect.height > window.innerHeight - 10) {
-        setPosition("right");
+      // 画面の中央より下にある場合は上に表示
+      if (rect.top > viewportHeight / 2) {
+        setPosition("above");
       } else {
-        setPosition("left");
+        setPosition("below");
       }
     }
-  }, [isVisible]);
+    setIsVisible(true);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsVisible(false);
+  }, []);
 
   return (
     <span
       ref={containerRef}
       className="relative inline-block cursor-help border-b border-dotted border-stone-400/50 dark:border-stone-500/50 hover:border-amber-500 dark:hover:border-amber-400 transition-colors"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onTouchStart={() => setIsVisible(true)}
-      onTouchEnd={() => setIsVisible(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleMouseEnter}
+      onTouchEnd={handleMouseLeave}
     >
       {children}
       {isVisible && (
         <span
-          ref={tooltipRef}
-          className={`absolute z-50 py-3 px-2 text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-600 rounded-lg shadow-lg whitespace-normal ${
-            position === "left"
+          className={`absolute z-50 py-3 px-2 text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-600 rounded-lg shadow-lg whitespace-normal pointer-events-none ${
+            position === "below"
               ? "top-full mt-2 right-0"
               : "bottom-full mb-2 right-0"
           }`}

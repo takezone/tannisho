@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   parseContentSimple,
@@ -25,6 +26,14 @@ interface ChapterContentProps {
   prevChapter: Chapter | null;
   nextChapter: Chapter | null;
 }
+
+type FontSize = "small" | "medium" | "large";
+
+const fontSizeClasses: Record<FontSize, string> = {
+  small: "text-base",
+  medium: "text-lg",
+  large: "text-xl",
+};
 
 function RubyText({
   content,
@@ -55,7 +64,7 @@ function TextBlockComponent({
 }) {
   if (block.type === "citation-header") {
     return (
-      <h3 className="text-base font-bold text-amber-800 dark:text-amber-400 border-t-2 border-amber-500 dark:border-amber-400 pt-2">
+      <h3 className="font-bold text-amber-800 dark:text-amber-400 border-t-2 border-amber-500 dark:border-amber-400 pt-2">
         <RubyText content={block.content} glossary={glossary} />
       </h3>
     );
@@ -78,6 +87,116 @@ function TextBlockComponent({
   );
 }
 
+function FontSizeSelector({
+  fontSize,
+  onChange,
+}: {
+  fontSize: FontSize;
+  onChange: (size: FontSize) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      {/* モバイル: ポップオーバー */}
+      <div className="relative md:hidden">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-8 h-8 flex items-center justify-center bg-stone-100 dark:bg-stone-800 rounded-lg text-stone-600 dark:text-stone-300 text-sm"
+          title="文字サイズ"
+        >
+          文
+        </button>
+        {isOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-20"
+              onClick={() => setIsOpen(false)}
+            />
+            <div className="absolute right-0 top-full mt-1 z-30 flex items-center gap-1 bg-white dark:bg-stone-800 rounded-lg p-1 shadow-lg border border-stone-200 dark:border-stone-700">
+              <button
+                onClick={() => {
+                  onChange("small");
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-1.5 rounded text-xs transition-colors ${
+                  fontSize === "small"
+                    ? "bg-amber-100 dark:bg-stone-700 text-amber-600 dark:text-amber-400"
+                    : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                小
+              </button>
+              <button
+                onClick={() => {
+                  onChange("medium");
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  fontSize === "medium"
+                    ? "bg-amber-100 dark:bg-stone-700 text-amber-600 dark:text-amber-400"
+                    : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                中
+              </button>
+              <button
+                onClick={() => {
+                  onChange("large");
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-1.5 rounded text-base transition-colors ${
+                  fontSize === "large"
+                    ? "bg-amber-100 dark:bg-stone-700 text-amber-600 dark:text-amber-400"
+                    : "text-stone-500 dark:text-stone-400"
+                }`}
+              >
+                大
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* デスクトップ: インライン表示 */}
+      <div className="hidden md:flex items-center gap-1 bg-stone-100 dark:bg-stone-800 rounded-lg p-1">
+        <button
+          onClick={() => onChange("small")}
+          className={`px-2 py-1 rounded text-xs transition-colors ${
+            fontSize === "small"
+              ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          }`}
+          title="小さい文字"
+        >
+          小
+        </button>
+        <button
+          onClick={() => onChange("medium")}
+          className={`px-2 py-1 rounded text-sm transition-colors ${
+            fontSize === "medium"
+              ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          }`}
+          title="標準の文字"
+        >
+          中
+        </button>
+        <button
+          onClick={() => onChange("large")}
+          className={`px-2 py-1 rounded text-base transition-colors ${
+            fontSize === "large"
+              ? "bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-400 shadow-sm"
+              : "text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300"
+          }`}
+          title="大きい文字"
+        >
+          大
+        </button>
+      </div>
+    </>
+  );
+}
 
 export default function ChapterContent({
   chapter,
@@ -86,32 +205,85 @@ export default function ChapterContent({
   nextChapter,
 }: ChapterContentProps) {
   const blocks = parseContentSimple(chapter.content);
+  const [fontSize, setFontSize] = useState<FontSize>("medium");
+
+  // 章が変わったらページトップにスクロール
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [chapter.id]);
+
+  // ローカルストレージから文字サイズを復元
+  useEffect(() => {
+    const saved = localStorage.getItem("tannisho-font-size") as FontSize | null;
+    if (saved && ["small", "medium", "large"].includes(saved)) {
+      setFontSize(saved);
+    }
+  }, []);
+
+  // 文字サイズをローカルストレージに保存
+  const handleFontSizeChange = (size: FontSize) => {
+    setFontSize(size);
+    localStorage.setItem("tannisho-font-size", size);
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
       <header className="border-b border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-4 py-2 md:px-6 md:py-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             <div className="flex items-center gap-2">
               <Drawer chapters={chapters} currentChapterId={chapter.id} />
               <div>
-                <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+                <h1 className="text-base md:text-xl font-bold text-stone-900 dark:text-stone-100">
                   歎異抄
                 </h1>
-                <p className="text-sm text-stone-500 dark:text-stone-400">
+                <p className="text-xs md:text-sm text-stone-500 dark:text-stone-400">
                   {chapter.title}
                 </p>
               </div>
             </div>
-            <HeaderSearch />
+            <div className="flex items-center gap-2 md:gap-3">
+              <FontSizeSelector
+                fontSize={fontSize}
+                onChange={handleFontSizeChange}
+              />
+              <HeaderSearch />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
-          <VerticalTextContainer className="overflow-x-auto">
-            <div className="writing-vertical h-[70vh] min-h-[500px]">
+        <div className="relative">
+          {/* 文章ブロックの左右のナビゲーションボタン */}
+          {prevChapter && (
+            <Link
+              href={getChapterUrl(prevChapter.id)}
+              className="hidden md:flex absolute -right-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full shadow-lg hover:bg-amber-50 dark:hover:bg-stone-700 hover:border-amber-300 dark:hover:border-amber-600 transition-colors group"
+              title={`前: ${prevChapter.title}`}
+            >
+              <span className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xl">
+                ›
+              </span>
+            </Link>
+          )}
+          {nextChapter && (
+            <Link
+              href={getChapterUrl(nextChapter.id)}
+              className="hidden md:flex absolute -left-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 items-center justify-center bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-full shadow-lg hover:bg-amber-50 dark:hover:bg-stone-700 hover:border-amber-300 dark:hover:border-amber-600 transition-colors group"
+              title={`次: ${nextChapter.title}`}
+            >
+              <span className="text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 text-xl">
+                ‹
+              </span>
+            </Link>
+          )}
+
+          <article className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-700 p-6 md:p-8">
+            <VerticalTextContainer key={chapter.id} className="overflow-x-auto">
+            <div
+              className={`writing-vertical h-[70vh] min-h-[500px] ${fontSizeClasses[fontSize]}`}
+            >
               {/* 前の章へ（タイトルの右に配置） */}
               {prevChapter && (
                 <Link
@@ -146,6 +318,7 @@ export default function ChapterContent({
             </div>
           </VerticalTextContainer>
         </article>
+        </div>
 
         {/* 語釈セクション */}
         {chapter.glossary && chapter.glossary.length > 0 && (

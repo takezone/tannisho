@@ -22,6 +22,8 @@ export const chapterUrlMap: Record<string, string> = {
   "第十八条": "18",
   "後記": "afterword",
   "流罪記録": "exile",
+  "付録_七高僧": "appendix-patriarchs",
+  "付録_親鸞聖人": "appendix-shinran",
 };
 
 // URLスラッグから章IDへの逆マッピング
